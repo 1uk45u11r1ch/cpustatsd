@@ -3,7 +3,7 @@ Description = Provide filtered information from MSR to non root users
 
 [Service]
 Type = simple
-ExecStart = /usr/src/cpustatsd.sh
+ExecStart = /usr/local/src/cpustatsd/cpustatsd.sh
 
 [Install]
 WantedBy = multi-user.target
