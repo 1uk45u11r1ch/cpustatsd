@@ -11,9 +11,9 @@ while true; do
 		readarray lines < <(turbostat -i 0.2 -n 1 -q)
 		
 		# cpu load
-		cpuload=$(echo ${lines[1]} | awk '{print $4}')
-		int=$(echo $cpuload | awk -F . '{print $1}')
-		float=$(echo $cpuload | awk -F . '{print $2}')
+		load=$(echo ${lines[1]} | awk '{print $4}')
+		load_int=$(echo $load | awk -F . '{print $1}')
+		load_float=$(echo $load | awk -F . '{print $2}')
 		
 		# cpu clock
 		maxclk=0
@@ -33,7 +33,7 @@ while true; do
 		done
 		
 		# output
-		printf -- "$(printf %3s $(echo $int))"".""$float" > /run/cpustatsd/load
+		printf -- "$(printf %3s $(echo $load_int))"".""$load_float" > /run/cpustatsd/load
 		printf %4s "$maxclk" > /run/cpustatsd/maxclk
 		printf %4s "$minclk" > /run/cpustatsd/minclk
 	else
