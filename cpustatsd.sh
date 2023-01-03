@@ -32,8 +32,8 @@ while true; do
 		minclk=9999
 		declare -i i=0
 		for line in "${lines[@]}"; do
-			clk="$(echo "$line" | awk '{print $3}')"
 			if [[ "$i" -gt "1" ]]; then
+				clk="$(echo "$line" | awk '{print $3}')"
 				if [ "$clk" -lt "$minclk" ]; then
 					minclk="$clk"
 				fi
