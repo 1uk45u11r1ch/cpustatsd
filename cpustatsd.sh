@@ -32,12 +32,8 @@ while true; do
 		minclk=9999
 		for line in "${lines[@]:2:1000}"; do
 			clk="$(echo "$line" | awk '{print $3}')"
-			if [ "$clk" -lt "$minclk" ]; then
-				minclk="$clk"
-			fi
-			if [ "$clk" -gt "$maxclk" ]; then
-				maxclk="$clk"
-			fi
+			[ "$clk" -lt "$minclk" ] && minclk="$clk"
+			[ "$clk" -gt "$maxclk" ] && maxclk="$clk"
 		done
 		
 		# output
