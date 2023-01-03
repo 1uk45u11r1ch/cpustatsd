@@ -13,9 +13,9 @@ while true; do
 		readarray lines < <(turbostat -i 0.2 -n 1 -q)
 		
 		# cpu load
-		load=$(echo ${lines[1]} | awk '{print $4}')
-		load_int=$(echo $load | awk -F . '{print $1}')
-		load_float=$(echo $load | awk -F . '{print $2}')
+		load="$(echo ${lines[1]} | awk '{print $4}')"
+		load_int="$(echo $load | awk -F . '{print $1}')"
+		load_float="$(echo $load | awk -F . '{print $2}')"
 
 		# core power
 		corpwr="$(echo ${lines[1]} | awk '{print $15}')"
@@ -32,7 +32,7 @@ while true; do
 		minclk=9999
 		declare -i i=0
 		for line in "${lines[@]}"; do
-			clk=$(echo $line | awk '{print $3}')
+			clk="$(echo "$line" | awk '{print $3}')"
 			if [[ "$i" -gt "1" ]]; then
 				if [ "$clk" -lt "$minclk" ]; then
 					minclk="$clk"
