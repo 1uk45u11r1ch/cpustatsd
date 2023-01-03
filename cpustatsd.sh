@@ -30,18 +30,14 @@ while true; do
 		# cpu clock
 		maxclk=0
 		minclk=9999
-		declare -i i=0
-		for line in "${lines[@]}"; do
-			if [[ "$i" -gt "1" ]]; then
-				clk="$(echo "$line" | awk '{print $3}')"
-				if [ "$clk" -lt "$minclk" ]; then
-					minclk="$clk"
-				fi
-				if [ "$clk" -gt "$maxclk" ]; then
-					maxclk="$clk"
-				fi
+		for line in "${lines[@]:2:1000}"; do
+			clk="$(echo "$line" | awk '{print $3}')"
+			if [ "$clk" -lt "$minclk" ]; then
+				minclk="$clk"
 			fi
-			i+=1
+			if [ "$clk" -gt "$maxclk" ]; then
+				maxclk="$clk"
+			fi
 		done
 		
 		# output
