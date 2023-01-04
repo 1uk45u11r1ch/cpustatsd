@@ -1,0 +1,11 @@
+[Unit]
+Description = Mount virtiofs share of cpustatsd data directory
+
+[Service]
+Type = oneshot
+ExecStart = /usr/bin/mkdir /run/cpustatsd && /usr/bin/mount -t virtiofs cpustatsd_data /run/cpustatsd
+RemainAfterExit = true
+ExecStop = umount /run/cpustatsd
+
+[Install]
+WantedBy = multi-user.target
