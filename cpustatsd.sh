@@ -18,12 +18,12 @@ while true; do
 		load_float="$(echo $load | awk -F . '{print $2}')"
 
 		# core power
-		corpwr="$(echo ${lines[1]} | awk '{print $15}')"
+		corpwr="$(echo ${lines[1]} | awk '{print $14}')"
 		corpwr_int="$(echo $corpwr | awk -F . '{print $1}')"
 		corpwr_float="$(echo $corpwr | awk -F . '{print $2}')"
 
 		# package power
-		pkgpwr="$(echo ${lines[1]} | awk '{print $16}')"
+		pkgpwr="$(echo ${lines[1]} | awk '{print $15}')"
 		pkgpwr_int="$(echo $pkgpwr | awk -F . '{print $1}')"
 		pkgpwr_float="$(echo $pkgpwr | awk -F . '{print $2}')"
 		
