@@ -1,48 +1,92 @@
-#!/bin/sh
+#!/bin/bash
 
-while true; do
-	if mountpoint -q /run; then
-		if [ ! -d /run/cpustatsd ];then
-			mkdir /run/cpustatsd
-			touch /run/cpustatsd/load && chmod 644 /run/cpustatsd/load
-			touch /run/cpustatsd/maxclk && chmod 644 /run/cpustatsd/maxclk
-			touch /run/cpustatsd/minclk && chmod 644 /run/cpustatsd/minclk
-			touch /run/cpustatsd/corpwr && chmod 644 /run/cpustatsd/corpwr
-			touch /run/cpustatsd/pkgpwr && chmod 644 /run/cpustatsd/pkgpwr
-		fi
-		readarray lines < <(turbostat -i 0.2 -n 1 -q)
-		
-		# cpu load
-		load="$(echo ${lines[1]} | awk '{print $4}')"
-		load_int="$(echo $load | awk -F . '{print $1}')"
-		load_float="$(echo $load | awk -F . '{print $2}')"
 
-		# core power
-		corpwr="$(echo ${lines[1]} | awk '{print $15}')"
-		corpwr_int="$(echo $corpwr | awk -F . '{print $1}')"
-		corpwr_float="$(echo $corpwr | awk -F . '{print $2}')"
 
-		# package power
-		pkgpwr="$(echo ${lines[1]} | awk '{print $16}')"
-		pkgpwr_int="$(echo $pkgpwr | awk -F . '{print $1}')"
-		pkgpwr_float="$(echo $pkgpwr | awk -F . '{print $2}')"
-		
-		# cpu clock
-		maxclk=0
-		minclk=9999
-		for line in "${lines[@]:2:1000}"; do
-			clk="$(echo "$line" | awk '{print $3}')"
-			[ "$clk" -lt "$minclk" ] && minclk="$clk"
-			[ "$clk" -gt "$maxclk" ] && maxclk="$clk"
-		done
-		
-		# output
-		printf -- "$(printf %3s $(echo $load_int))"".""$load_float" > /run/cpustatsd/load
-		printf -- "$(printf %3s $(echo $corpwr_int))"".""$corpwr_float" > /run/cpustatsd/corpwr
-		printf -- "$(printf %3s $(echo $pkgpwr_int))"".""$pkgpwr_float" > /run/cpustatsd/pkgpwr
-		printf %4s "$maxclk" > /run/cpustatsd/maxclk
-		printf %4s "$minclk" > /run/cpustatsd/minclk
-	else
-		sleep 1
-	fi
+while ! mountpoint -q /run; do
+	echo "here"
+	sleep 1
 done
+
+
+
+if [ -d /run/cpustatsd ];then
+	rm -rf /run/cpustatsd
+fi
+mkdir /run/cpustatsd
+chmod 755 /run/cpustatsd
+touch /run/cpustatsd/load && chmod 644 /run/cpustatsd/load
+touch /run/cpustatsd/maxclk && chmod 644 /run/cpustatsd/maxclk
+touch /run/cpustatsd/minclk && chmod 644 /run/cpustatsd/minclk
+touch /run/cpustatsd/corpwr && chmod 644 /run/cpustatsd/corpwr
+touch /run/cpustatsd/pkgpwr && chmod 644 /run/cpustatsd/pkgpwr
+chmod -R 644 /run/cpustatsd/*
+
+
+
+while false; do
+	readarray lines < <(turbostat -i 0.2 -n 1 -q)
+		
+	# cpu load
+	load="$(echo ${lines[1]} | awk '{print $4}')"
+	load_int="$(echo $load | awk -F . '{print $1}')"
+	load_float="$(echo $load | awk -F . '{print $2}')"
+
+	# core power
+	corpwr="$(echo ${lines[1]} | awk '{print $14}')"
+	corpwr_int="$(echo $corpwr | awk -F . '{print $1}')"
+	corpwr_float="$(echo $corpwr | awk -F . '{print $2}')"
+	
+	# package power
+	pkgpwr="$(echo ${lines[1]} | awk '{print $15}')"
+	pkgpwr_int="$(echo $pkgpwr | awk -F . '{print $1}')"
+	pkgpwr_float="$(echo $pkgpwr | awk -F . '{print $2}')"
+	
+	# cpu clock
+	maxclk=0
+	minclk=9999
+	for line in "${lines[@]:2:1000}"; do
+		clk="$(echo "$line" | awk '{print $3}')"
+		[ "$clk" -lt "$minclk" ] && minclk="$clk"
+		[ "$clk" -gt "$maxclk" ] && maxclk="$clk"
+	done
+	
+	# output
+	printf -- "$(printf %3s $(echo $load_int))"".""$load_float" > /run/cpustatsd/load
+	printf -- "$(printf %3s $(echo $corpwr_int))"".""$corpwr_float" > /run/cpustatsd/corpwr
+	printf -- "$(printf %3s $(echo $pkgpwr_int))"".""$pkgpwr_float" > /run/cpustatsd/pkgpwr
+	printf %4s "$maxclk" > /run/cpustatsd/maxclk
+	printf %4s "$minclk" > /run/cpustatsd/minclk
+
+	sleep 1
+done
+
+
+
+
+turbostat -q -i 0.2 |
+	while IFS= read -r line; do
+		echo $line | grep "^Core" > /dev/null
+		headline_found="$?"
+		echo $line | grep "^-" > /dev/null
+		overview_found="$?"
+
+		if [ $overview_found -eq 0 ]; then
+			
+			# cpu load
+			load="$(echo ${line} | awk '{print $4}')"
+			printf "%6.2f" $load > /run/cpustatsd/load
+
+			# cpu core power
+			corpwr="$(echo ${line} | awk '{print $14}')"
+			printf "%6.2f" $corpwr > /run/cpustatsd/corpwr
+
+			# cpu package power
+			pkgpwr="$(echo ${line} | awk '{print $15}')"
+			printf "%6.2f" $pkgpwr > /run/cpustatsd/pkgpwr
+
+		fi	
+		#elif [ $headline_found -eq 1 ]; then
+		#	echo "line"
+		#fi
+		
+	done
